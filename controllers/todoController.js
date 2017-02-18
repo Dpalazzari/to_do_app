@@ -1,6 +1,6 @@
 module.exports = function(app){
   app.get('/todo', function(request, response){
-    
+    response.render('todo');
   });
 
   app.post('/todo', function(request, response){
@@ -8,6 +8,6 @@ module.exports = function(app){
   });
 
   app.delete('/todo', function(request, response){
-    
+
   });
 };
