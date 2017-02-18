@@ -10,29 +10,32 @@ var todoSchema = new mongoose.Schema({
 });
 
 //Create Model
-var Todo = mongoose.model('Todo', todoSchema);
-var itemOne = Todo({item: 'Get flowers'}).save(function(error){
-  if (error) throw error;
-  console.log('item saved');
-});
+var Todo    = mongoose.model('Todo', todoSchema);
 
-var data             = [ {item: 'learn mongo'}, {item: 'organize project'}, {item: 'learn javascript'} ];
 var urlencodedParser = bodyParser.urlencoded({extended: false});
 
 module.exports = function(app){
   app.get('/todo', function(request, response){
-    response.render('todo', {todos: data});  
+    // get data from mongoDB and pass it to the view
+    Todo.find({}, function(error, data){
+      if (error) throw error;
+      response.render('todo', {todos: data});  
+    }); //retrieve all items in this Todo collection. To find a specific one: Todo.find({item: 'buy flowers'})
   });
 
   app.post('/todo', urlencodedParser, function(request, response){
-    data.push(request.body);
-    response.json(data);
+    //get data from view and post to mongoDB
+    var newTodo = Todo(request.body).save(function(error, data){
+      if (error) throw error;
+      response.json(data);
+    });
   });
 
   app.delete('/todo/:item', function(request, response){
-    data = data.filter(function(todo){ //filter's item out of the array when todo.item === :item in the route
-      return todo.item.replace(/ /g, '-') !== request.params.item; //creates a slug for each item basically
+    //delete the requested item from mongoDB
+    Todo.find({item: request.params.item.replace(/\-/g, " ")}).remove(function(error, data){
+      if (error) throw error;
+      response.json(data);
     });
-    response.json(data);
   });
 };
